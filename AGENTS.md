@@ -169,6 +169,9 @@ delete: remove deprecated standings view
 - Every change must enter through a Pull Request; direct integration is not allowed.
 - The default target for every work branch is `dev`.
 - Create a Pull Request targeting `main` only when the project owner explicitly requests it.
+- Do not create a Pull Request automatically as soon as implementation work is complete.
+- Before creating a Pull Request, tell the project owner that the task is complete, summarize the delivered changes and verification results, and wait for explicit approval to proceed.
+- Create the Pull Request only after the project owner confirms that the task is ready for review.
 - Every Pull Request must explain its purpose, summarize the changes, and describe the checks performed.
 - No agent may approve or merge a Pull Request.
 - All Pull Requests must remain pending for the project owner's review, approval, and merge decision.
@@ -176,7 +179,7 @@ delete: remove deprecated standings view
 
 ## Task Completion Rule
 
-A task is ready for review when:
+A task is ready for the project owner's pre-PR checkpoint when:
 
 1. The requested change is complete.
 2. Unit tests pass.
@@ -185,5 +188,9 @@ A task is ready for review when:
 5. Any other relevant checks pass.
 6. Changes are organized into commits that follow the established naming convention.
 7. The branch is published to the remote repository.
-8. A Pull Request targeting `dev` has been created, unless explicitly instructed otherwise.
-9. The Pull Request is available for the project owner to audit and decide whether to merge.
+8. The project owner has been notified that the task is complete and has received the verification results.
+
+After the project owner explicitly approves creating the Pull Request:
+
+1. Create the Pull Request targeting `dev`, unless explicitly instructed otherwise.
+2. Leave it open and unmerged for the project owner to audit and decide whether to merge.
