@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { circuits, officialCircuits, specialCircuits } from '../circuits/data/circuits'
@@ -28,8 +28,10 @@ describe('App', () => {
   it('presenta el primer circuito oficial y su posición en la temporada', () => {
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toHaveClass('circuit-title')
     expect(screen.getByText('Calendario 2026 · 1 de 27')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Albert Park, Calendario 2026' })).toHaveAttribute('aria-current', 'true')
+    expect(screen.queryByText('Albert Park Grand Prix Circuit')).not.toBeInTheDocument()
     expect(screen.queryByText(/^R\d+$/)).not.toBeInTheDocument()
   })
 
@@ -66,12 +68,43 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
   })
 
-  it('permite cambiar el circuito con el selector móvil accesible', async () => {
+  it('permite cambiar el circuito con el menú móvil sin repetir la categoría oficial', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Seleccionar circuito' }), 'monza')
+    const trigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Albert Park' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveTextContent(/^Albert Park⌄$/)
+    expect(trigger).not.toHaveTextContent('Calendario 2026')
+    await user.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('listbox', { name: 'Circuitos disponibles' })).toBeInTheDocument()
+    await user.click(screen.getByRole('option', { name: 'Monza' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Monza' })).toBeInTheDocument()
     expect(screen.getByText('Calendario 2026 · 13 de 27')).toBeInTheDocument()
+    expect(screen.queryByRole('listbox', { name: 'Circuitos disponibles' })).not.toBeInTheDocument()
+  })
+
+  it('opera el menú móvil con teclado, Escape y clic exterior', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const trigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Albert Park' })
+    trigger.focus()
+    await user.keyboard('{ArrowDown}')
+    expect(screen.getByRole('option', { name: 'Albert Park' })).toHaveFocus()
+    await user.keyboard('{ArrowDown}')
+    expect(screen.getByRole('option', { name: 'Shanghai' })).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await waitFor(() => expect(trigger).toHaveFocus())
+
+    await user.click(trigger)
+    await user.keyboard('{End}{Enter}')
+    expect(screen.getByRole('heading', { level: 1, name: 'Oscar y Juan Gálvez' })).toBeInTheDocument()
+
+    const updatedTrigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Oscar y Juan Gálvez' })
+    await user.click(updatedTrigger)
+    await user.click(screen.getByRole('heading', { level: 1, name: 'Oscar y Juan Gálvez' }))
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 
   it('permite explorar un punto del trazado con el teclado', async () => {
