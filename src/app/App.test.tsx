@@ -21,6 +21,8 @@ describe('dataset de circuitos', () => {
     ])
     expect(specialCircuits.map((circuit) => circuit.id)).toEqual(['bahrain', 'jeddah', 'imola', 'galvez'])
     expect(specialCircuits.every((circuit) => circuit.round === undefined)).toBe(true)
+    expect(circuits.filter((circuit) => circuit.track.mapImage !== null)).toHaveLength(24)
+    expect(circuits.filter((circuit) => circuit.track.mapImage === null).map((circuit) => circuit.id)).toEqual(['bahrain', 'jeddah', 'imola'])
   })
 })
 
@@ -41,9 +43,8 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Shanghai, Calendario 2026' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Shanghai' })).toBeInTheDocument()
     expect(screen.getByText('Calendario 2026 · 2 de 27')).toBeInTheDocument()
-    expect(screen.getByText('Caracol inicial')).toBeInTheDocument()
     expect(screen.getByLabelText('Experiencia de Shanghai International Circuit').querySelector('img')).toHaveAttribute('src', '/circuits/shanghai.webp')
-    expect(screen.getByRole('img', { name: /representación esquemática.*shanghai/i })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /cartografía del trazado.*shanghai/i })).toHaveAttribute('src', '/circuits/tracks/shanghai-1.svg')
     await user.click(screen.getByRole('button', { name: 'Circuito anterior' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
   })
@@ -107,14 +108,12 @@ describe('App', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 
-  it('permite explorar un punto del trazado con el teclado', async () => {
+  it('comunica cuando un circuito no tiene una fuente cartográfica', async () => {
     const user = userEvent.setup()
     render(<App />)
-    const marker = screen.getByRole('button', { name: 'T9–10: Cambio rápido' })
-    marker.focus()
-    await user.keyboard('{Enter}')
-    expect(marker).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText(/estabilidad y compromiso/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Bahréin, Especial' }))
+    expect(screen.getByRole('img', { name: /cartografía del trazado.*bahrain.*no disponible/i })).toBeInTheDocument()
+    expect(screen.getByText('Trazado no disponible')).toBeInTheDocument()
   })
 
   it('mantiene disponible la experiencia si falla el fondo ambiental', () => {
