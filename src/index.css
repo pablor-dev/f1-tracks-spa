@@ -23,6 +23,9 @@
   --color-gold: #c89b3c;
   --color-gold-bright: #f1cf7a;
   --color-gold-soft: #251f13;
+  --color-track-zone-1: #ff625d;
+  --color-track-zone-2: #64e5bc;
+  --color-track-zone-3: #f1cf7a;
   --radius-control: 0.75rem;
   --radius-panel: 1.25rem;
   --radius-pill: 999rem;
@@ -171,6 +174,108 @@ button:disabled { cursor: not-allowed; }
   object-fit: contain;
   filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.5));
 }
+.interactive-track-map {
+  position: relative;
+  z-index: var(--z-index-content);
+  display: block;
+  width: min(100%, 25rem);
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.5));
+}
+.interactive-track-map__base,
+.interactive-track-map__zone {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 20;
+}
+.interactive-track-map__base { stroke: var(--color-line-strong); }
+.interactive-track-map__zone {
+  cursor: pointer;
+  opacity: 0.42;
+  transition: opacity 180ms var(--ease-drive), filter 180ms var(--ease-drive);
+}
+.interactive-track-map__zone:hover,
+.interactive-track-map__zone:focus-visible,
+.interactive-track-map__zone.is-active {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.35rem currentColor);
+  outline: none;
+}
+.interactive-track-map__zone:focus-visible { stroke-width: 25; }
+.interactive-track-map__zone--1 { color: var(--color-track-zone-1); stroke: var(--color-track-zone-1); }
+.interactive-track-map__zone--2 { color: var(--color-track-zone-2); stroke: var(--color-track-zone-2); }
+.interactive-track-map__zone--3 { color: var(--color-track-zone-3); stroke: var(--color-track-zone-3); }
+.track-marker {
+  cursor: pointer;
+  color: var(--color-track-zone-1);
+  opacity: 0.72;
+  transition: opacity 180ms var(--ease-drive), filter 180ms var(--ease-drive);
+}
+.track-marker circle {
+  fill: var(--color-canvas);
+  stroke: currentColor;
+  stroke-width: 4;
+}
+.track-marker text {
+  fill: var(--color-content);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  pointer-events: none;
+  text-anchor: middle;
+}
+.track-marker--2 { color: var(--color-track-zone-2); }
+.track-marker--3 { color: var(--color-track-zone-3); }
+.track-marker:hover,
+.track-marker:focus-visible,
+.track-marker.is-active {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.3rem currentColor);
+  outline: none;
+}
+.track-marker:focus-visible circle,
+.track-marker.is-active circle { stroke-width: 7; }
+.track-finish-source { fill: transparent; stroke: transparent; pointer-events: none; }
+.track-finish-marker { color: var(--color-content); pointer-events: none; }
+.track-finish-marker__outer {
+  fill: var(--color-canvas);
+  stroke: currentColor;
+  stroke-width: 4;
+}
+.track-finish-marker__inner { fill: var(--color-brand-bright); }
+.track-map-loading {
+  width: min(80%, 18rem);
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-line-subtle), var(--color-line-strong), var(--color-line-subtle));
+  background-size: 200% 100%;
+  animation: track-loading 1.2s linear infinite;
+}
+@keyframes track-loading { to { background-position: -200% 0; } }
+.track-zone-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.track-zone-control,
+.track-hotspot-control {
+  min-height: 2.25rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  padding-inline: 0.75rem;
+  color: var(--color-content-soft);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  transition: color 180ms var(--ease-drive), background-color 180ms var(--ease-drive), border-color 180ms var(--ease-drive);
+}
+.track-zone-control:hover,
+.track-hotspot-control:hover { border-color: var(--color-content-muted); color: var(--color-content); }
+.track-zone-control[aria-pressed='true'],
+.track-hotspot-control[aria-pressed='true'] { background: var(--color-surface-overlay); color: var(--color-content); }
+.track-zone-control--1[aria-pressed='true'] { border-color: var(--color-track-zone-1); }
+.track-zone-control--2[aria-pressed='true'] { border-color: var(--color-track-zone-2); }
+.track-zone-control--3[aria-pressed='true'] { border-color: var(--color-track-zone-3); }
+.track-hotspot-control[aria-pressed='true'] { border-color: var(--color-brand-bright); }
 .track-map-fallback {
   display: flex;
   max-width: 18rem;

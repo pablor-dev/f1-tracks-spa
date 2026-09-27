@@ -9,7 +9,7 @@ export interface TrackHotspot {
   label: string
   title: string
   type: HotspotType
-  position: { x: number; y: number }
+  progress?: number
   cornerNumber?: number
   sector?: number
   description: string
@@ -24,9 +24,11 @@ export interface CircuitTheme {
 }
 
 export interface CircuitTrack {
+  finishLineProgress?: number
   mapImage: string | null
   hotspots: TrackHotspot[]
   representation: 'verified' | 'unavailable'
+  referenceCoverage: 'curve-reference' | 'track-only'
 }
 
 export interface ImageCredits {
