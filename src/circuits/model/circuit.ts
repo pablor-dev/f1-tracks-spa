@@ -1,34 +1,59 @@
 export type CircuitCategory = 'official' | 'special'
 
-export interface CircuitHighlight {
+export type CircuitStatus = 'current' | 'special' | 'historic'
+
+export type HotspotType = 'corner' | 'chicane' | 'braking-zone' | 'high-speed' | 'overtaking' | 'elevation' | 'historic' | 'technical'
+
+export interface TrackHotspot {
   id: string
   label: string
-  name: string
-  sector: string
+  title: string
+  type: HotspotType
+  position: { x: number; y: number }
+  cornerNumber?: number
+  sector?: number
   description: string
-  x: number
-  y: number
+  extendedDescription?: string
 }
 
-export interface CircuitChallenge {
-  label: string
-  value: string
+export interface CircuitTheme {
+  backgroundImage: string
+  backgroundAlt: string
+  backgroundPosition?: string
+  visualTreatment?: string
+}
+
+export interface CircuitTrack {
+  svg: string
+  viewBox: string
+  hotspots: TrackHotspot[]
+  representation: 'provisional' | 'verified'
+}
+
+export interface ImageCredits {
+  author?: string
+  source?: string
+  sourceUrl?: string
+  license?: string
+  licenseUrl?: string
 }
 
 export interface Circuit {
   id: string
+  slug: string
   name: string
   officialName: string
   city: string
   country: string
+  countryCode: string
   category: CircuitCategory
-  season: number | null
-  round: number | null
+  status: CircuitStatus
+  season?: number
+  round?: number
   summary: string
   history: string
-  character: string
-  trackPath: string
-  trackViewBox: string
-  challenges: CircuitChallenge[]
-  highlights: CircuitHighlight[]
+  challenges: string[]
+  theme: CircuitTheme
+  track: CircuitTrack
+  imageCredits?: ImageCredits
 }
