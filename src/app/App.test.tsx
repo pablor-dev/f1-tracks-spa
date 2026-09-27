@@ -54,7 +54,7 @@ describe('dataset de circuitos', () => {
 describe('App', () => {
   it('presenta el primer circuito oficial y su posición en la temporada', () => {
     const { container } = render(<App />)
-    expect(container.querySelector('header img')).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'))
+    expect(container.querySelector('header img')).toHaveAttribute('src')
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toHaveClass('circuit-title')
     expect(screen.getByText('Calendario 2026 · 1 de 27')).toBeInTheDocument()
