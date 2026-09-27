@@ -5,6 +5,27 @@ import { circuits, officialCircuits, specialCircuits } from '../circuits/data/ci
 import { CircuitExperience } from '../circuits/ui/CircuitExperience'
 import { App } from './App'
 
+async function completeCircuitTransition(container: HTMLElement) {
+  const stage = container.querySelector<HTMLElement>('.circuit-stage')
+  const candidate = container.querySelector<HTMLImageElement>('.circuit-backdrop-loader--candidate')
+  const outgoingContent = container.querySelector<HTMLElement>('.circuit-transition-content')
+  expect(stage).not.toBeNull()
+  expect(candidate).not.toBeNull()
+  expect(outgoingContent).not.toBeNull()
+
+  const finishAnimation = (element: HTMLElement) => {
+    fireEvent(element, new Event('webkitAnimationEnd', { bubbles: true }))
+  }
+
+  fireEvent.load(candidate as HTMLImageElement)
+  finishAnimation(outgoingContent as HTMLElement)
+  await waitFor(() => expect(stage).toHaveAttribute('data-transition-phase', 'entering'))
+
+  const incomingContent = container.querySelector<HTMLElement>('.circuit-transition-content')
+  finishAnimation(incomingContent as HTMLElement)
+  await waitFor(() => expect(stage).toHaveAttribute('data-transition-phase', 'idle'))
+}
+
 describe('dataset de circuitos', () => {
   it('incluye 23 rondas oficiales en orden y cuatro circuitos especiales', () => {
     expect(circuits).toHaveLength(27)
@@ -43,20 +64,23 @@ describe('App', () => {
 
   it('actualiza coordinadamente fondo, contenido y trazado al seleccionar otro circuito', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     await user.click(screen.getByRole('button', { name: 'Shanghai, Calendario 2026' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Shanghai' })).toBeInTheDocument()
     expect(screen.getByText('Calendario 2026 · 2 de 27')).toBeInTheDocument()
     expect(screen.getByLabelText('Experiencia de Shanghai International Circuit').querySelector('img')).toHaveAttribute('src', '/circuits/shanghai.webp')
     expect(await screen.findByRole('img', { name: /trazado.*shanghai/i })).toHaveAttribute('src', '/circuits/tracks/shanghai-1.svg')
     await user.click(screen.getByRole('button', { name: 'Circuito anterior' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
   })
 
   it('integra y distingue un circuito histórico en el mismo navegador', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     await user.click(screen.getByRole('button', { name: 'Oscar y Juan Gálvez, Histórico' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Oscar y Juan Gálvez' })).toBeInTheDocument()
     expect(screen.getByText(/histórico · fuera del calendario 2026/i)).toBeInTheDocument()
     expect(screen.getByText('Histórico · 27 de 27')).toBeInTheDocument()
@@ -66,16 +90,18 @@ describe('App', () => {
 
   it('navega en loop hacia ambos extremos', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     await user.click(screen.getByRole('button', { name: 'Circuito anterior' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Oscar y Juan Gálvez' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Circuito siguiente' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
   })
 
   it('permite cambiar el circuito con el menú móvil sin repetir la categoría oficial', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     const trigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Albert Park' })
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
     expect(trigger).toHaveTextContent(/^Albert Park⌄$/)
@@ -84,6 +110,7 @@ describe('App', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByRole('listbox', { name: 'Circuitos disponibles' })).toBeInTheDocument()
     await user.click(screen.getByRole('option', { name: 'Monza' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Monza' })).toBeInTheDocument()
     expect(screen.getByText('Calendario 2026 · 13 de 27')).toBeInTheDocument()
     expect(screen.queryByRole('listbox', { name: 'Circuitos disponibles' })).not.toBeInTheDocument()
@@ -91,7 +118,7 @@ describe('App', () => {
 
   it('opera el menú móvil con teclado, Escape y clic exterior', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     const trigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Albert Park' })
     trigger.focus()
     await user.keyboard('{ArrowDown}')
@@ -104,6 +131,7 @@ describe('App', () => {
 
     await user.click(trigger)
     await user.keyboard('{End}{Enter}')
+    await completeCircuitTransition(container)
     expect(screen.getByRole('heading', { level: 1, name: 'Oscar y Juan Gálvez' })).toBeInTheDocument()
 
     const updatedTrigger = screen.getByRole('button', { name: 'Seleccionar circuito. Activo: Oscar y Juan Gálvez' })
@@ -114,8 +142,9 @@ describe('App', () => {
 
   it('ofrece zonas y curvas destacadas para los circuitos con referencia', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    const { container } = render(<App />)
     await user.click(screen.getByRole('button', { name: 'Shanghai, Calendario 2026' }))
+    await completeCircuitTransition(container)
     expect(screen.getByRole('button', { name: 'T1–2' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Z1' })).toBeInTheDocument()
   })
