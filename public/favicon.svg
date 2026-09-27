@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 112" fill="none">
+  <path
+    fill="#F1CF7A"
+    fill-rule="evenodd"
+    d="M8 91C4 76 7 51 18 31 31 10 51 3 76 3h34L92 34h12L87 63H75C64 77 47 85 27 86H16c-4 0-7 2-8 5Zm12-52 42 1c15 0 24 5 24 13 0 12-27 24-60 24H14l6-38Z"
+    clip-rule="evenodd"
+  />
+  <path fill="#F1CF7A" d="m91 3 29 0-18 32H73L91 3Z" />
+  <path fill="#F1CF7A" d="m151 3 29 0-18 32h-29l18-32Z" />
+  <path fill="#F1CF7A" d="m103 40 29 0-18 32H85l18-32Z" />
+  <path fill="#F1CF7A" d="m133 77 29 0-18 32h-29l18-32Z" />
+  <path fill="#F1CF7A" d="m73 77 29 0-18 32H55l18-32Z" />
+</svg>
