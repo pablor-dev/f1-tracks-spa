@@ -88,6 +88,27 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Circuito anterior' })).toBeEnabled()
   })
 
+  it('centra los circuitos especiales desplazando sólo el carrusel desktop', async () => {
+    const user = userEvent.setup()
+    const scrollTo = vi.fn()
+    const scrollIntoView = vi.fn()
+    const originalScrollTo = HTMLElement.prototype.scrollTo
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    HTMLElement.prototype.scrollTo = scrollTo
+    HTMLElement.prototype.scrollIntoView = scrollIntoView
+
+    try {
+      render(<App />)
+      await user.click(screen.getByRole('button', { name: 'Oscar y Juan Gálvez, Histórico' }))
+
+      expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ behavior: 'smooth', left: expect.any(Number) }))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+    } finally {
+      HTMLElement.prototype.scrollTo = originalScrollTo
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView
+    }
+  })
+
   it('navega en loop hacia ambos extremos', async () => {
     const user = userEvent.setup()
     const { container } = render(<App />)
