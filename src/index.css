@@ -164,16 +164,22 @@ button:disabled { cursor: not-allowed; }
   background-size: 2rem 2rem;
 }
 .track-canvas { height: clamp(14rem, 36vh, 17rem); }
-.track-shadow { stroke: rgb(0 0 0 / 0.7); stroke-linecap: round; stroke-linejoin: round; stroke-width: 22; }
-.track-line { stroke: var(--color-content-soft); stroke-linecap: round; stroke-linejoin: round; stroke-width: 9; transition: stroke 300ms var(--ease-drive); }
-.track-marker { cursor: pointer; }
-.track-marker circle {
-  fill: var(--color-surface); stroke: var(--color-content-soft); stroke-width: 2;
-  transition: fill 180ms var(--ease-drive), stroke 180ms var(--ease-drive), transform 180ms var(--ease-drive);
+.track-map {
+  display: block;
+  width: min(100%, 25rem);
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.5));
 }
-.track-marker text { fill: var(--color-content); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; pointer-events: none; }
-.track-marker:hover circle, .track-marker:focus-visible circle, .track-marker circle.is-selected {
-  fill: var(--color-brand); stroke: var(--color-brand-bright); transform: scale(1.08);
+.track-map-fallback {
+  display: flex;
+  max-width: 18rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1rem 2rem;
+  color: var(--color-content-dim);
+  text-align: center;
 }
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }

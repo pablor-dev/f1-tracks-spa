@@ -24,10 +24,9 @@ export interface CircuitTheme {
 }
 
 export interface CircuitTrack {
-  svg: string
-  viewBox: string
+  mapImage: string | null
   hotspots: TrackHotspot[]
-  representation: 'provisional' | 'verified'
+  representation: 'verified' | 'unavailable'
 }
 
 export interface ImageCredits {

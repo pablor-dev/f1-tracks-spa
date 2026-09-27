@@ -20,14 +20,34 @@ interface CircuitSeed {
   backgroundPosition?: string
 }
 
-const viewBox = '0 0 640 390'
-const schematicPaths = [
-  'M97 279C62 223 84 139 149 111c43-19 71-65 126-66 43-1 65 35 105 42 70 13 139-24 172 34 27 48-11 90-5 139 7 54-34 87-87 79-64-9-105 15-162 0-45-12-64-54-105-58-33-3-74 30-96-2Z',
-  'M172 94c-43 25-67 80-37 116 25 29 76 3 67-33-8-30-50-8-38-50 13-48 93-69 141-44 45 24 56 81 103 97 43 15 66-27 105-9 36 16 29 68 1 91-47 40-118 40-168 8-42-26-101 8-150-9-44-16-72-67-43-106Z',
-  'M84 275c55-25 89-92 142-110 50-17 108-5 147 31 44 41 66 113 135 105 48-5 71-63 40-100-37-45-105-20-151-42-48-23-62-80-117-91-59-12-127 21-146 77-12 35 4 61 50 40Z M239 166c33 36 72 69 120 68 48 0 86-29 132-33',
-  'M95 261c53-16 82-63 131-87 62-30 126-4 183-34 49-26 102-55 138-12 31 37 5 90-38 105-48 17-94-10-138 8-51 20-69 78-126 78-43 0-84-26-89-58-5-29 25-42 62-52Z',
-]
 const hotspotPositions = [{ x: 128, y: 270 }, { x: 300, y: 112 }, { x: 514, y: 245 }, { x: 390, y: 326 }, { x: 208, y: 205 }, { x: 535, y: 108 }]
+
+const trackMapByCircuitId: Readonly<Record<string, string>> = {
+  'albert-park': 'melbourne-2.svg',
+  shanghai: 'shanghai-1.svg',
+  suzuka: 'suzuka-2.svg',
+  miami: 'miami-1.svg',
+  montreal: 'montreal-6.svg',
+  monaco: 'monaco-6.svg',
+  barcelona: 'catalunya-6.svg',
+  'red-bull-ring': 'spielberg-3.svg',
+  silverstone: 'silverstone-8.svg',
+  spa: 'spa-francorchamps-4.svg',
+  hungaroring: 'hungaroring-3.svg',
+  zandvoort: 'zandvoort-5.svg',
+  monza: 'monza-7.svg',
+  madring: 'madring-1.svg',
+  baku: 'baku-1.svg',
+  sepang: 'sepang-1.svg',
+  singapore: 'marina-bay-4.svg',
+  austin: 'austin-1.svg',
+  mexico: 'mexico-city-3.svg',
+  interlagos: 'interlagos-2.svg',
+  'las-vegas': 'las-vegas-1.svg',
+  lusail: 'lusail-1.svg',
+  'yas-marina': 'yas-marina-2.svg',
+  galvez: 'buenos-aires-3.svg',
+}
 
 function buildHotspots(id: string, seeds: HotspotSeed[]): TrackHotspot[] {
   return seeds.map(([label, title, type, description], index) => ({
@@ -71,8 +91,9 @@ const seeds: CircuitSeed[] = [
   { id: 'galvez', name: 'Oscar y Juan Gálvez', officialName: 'Autódromo Oscar y Juan Gálvez', city: 'Buenos Aires', country: 'Argentina', countryCode: 'AR', image: 'buenos-aires.webp', category: 'special', status: 'historic', summary: 'Un emblema del automovilismo argentino con múltiples configuraciones.', history: 'Inaugurado en 1952, fue escenario del Gran Premio de Argentina en distintas etapas entre 1953 y 1998.', challenges: ['Adaptación a variantes', 'Frenada y tracción', 'Superficie cambiante'], hotspots: [['Curvón', 'Curvón Salotto', 'historic', 'Una referencia del trazado extenso por su velocidad y compromiso.'], ['Mixtos', 'Sector mixto', 'technical', 'Los cambios de dirección exigen agilidad.'], ['Horquilla', 'Horquilla', 'overtaking', 'Una frenada profunda históricamente asociada a intentos de sobrepaso.']] },
 ]
 
-export const circuits: Circuit[] = seeds.map((seed, index) => {
+export const circuits: Circuit[] = seeds.map((seed) => {
   const category = seed.category ?? 'official'
+  const trackMap = trackMapByCircuitId[seed.id]
   return {
     id: seed.id,
     slug: seed.id,
@@ -95,10 +116,9 @@ export const circuits: Circuit[] = seeds.map((seed, index) => {
       visualTreatment: 'cinematic-dark',
     },
     track: {
-      svg: schematicPaths[index % schematicPaths.length],
-      viewBox,
+      mapImage: trackMap ? `/circuits/tracks/${trackMap}` : null,
       hotspots: buildHotspots(seed.id, seed.hotspots),
-      representation: 'provisional',
+      representation: trackMap ? 'verified' : 'unavailable',
     },
   }
 })
