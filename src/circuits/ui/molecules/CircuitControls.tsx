@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Button } from '../../../shared/ui/atoms/Button'
 import type { Circuit } from '../../model/circuit'
 
@@ -9,30 +10,75 @@ interface CircuitControlsProps {
   onSelect: (id: string) => void
 }
 
+function getCategoryLabel(circuit: Circuit) {
+  if (circuit.category === 'official') return 'Calendario 2026'
+  return circuit.status === 'historic' ? 'Histórico' : 'Especial'
+}
+
 export function CircuitControls({ circuits, onNext, onPrevious, onSelect, selectedId }: CircuitControlsProps) {
+  const optionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const selectedIndex = circuits.findIndex((circuit) => circuit.id === selectedId)
-  const hasOfficialSelection = selectedIndex >= 0
+  const selectedCircuit = circuits[selectedIndex]
+
+  useEffect(() => {
+    const selectedOption = optionRefs.current[selectedId]
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    selectedOption?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })
+  }, [selectedId])
 
   return (
-    <div className="mt-6" id="calendario">
-      <div className="flex items-center justify-between gap-3">
-        <div aria-live="polite" className="text-sm text-content-muted">
-          {hasOfficialSelection ? `Ronda ${selectedIndex + 1} de ${circuits.length} disponibles` : 'Circuito especial seleccionado'}
-        </div>
-        <div className="flex gap-2">
-          <Button aria-label="Circuito anterior" className="aspect-square px-0" disabled={!hasOfficialSelection || selectedIndex === 0} onClick={onPrevious}><span aria-hidden="true">←</span></Button>
-          <Button aria-label="Circuito siguiente" className="aspect-square px-0" disabled={!hasOfficialSelection || selectedIndex === circuits.length - 1} onClick={onNext}><span aria-hidden="true">→</span></Button>
-        </div>
+    <div id="calendario">
+      <div aria-atomic="true" aria-live="polite" className="text-sm font-semibold text-content-soft">
+        {selectedCircuit ? `${getCategoryLabel(selectedCircuit)} · ${selectedIndex + 1} de ${circuits.length}` : 'Circuito no disponible'}
       </div>
-      <div aria-label="Circuitos oficiales de la temporada 2026" className="scrollbar-none mt-4 flex snap-x gap-2 overflow-x-auto pb-2">
-        {circuits.map((circuit) => {
-          const isSelected = circuit.id === selectedId
-          return (
-            <Button aria-current={isSelected ? 'true' : undefined} className="shrink-0 snap-start" key={circuit.id} onClick={() => onSelect(circuit.id)} variant={isSelected ? 'primary' : 'secondary'}>
-              <span className="text-xs opacity-70">R{circuit.round}</span>{circuit.name}
-            </Button>
-          )
-        })}
+
+      <div className="mt-3 md:hidden">
+        <label className="sr-only" htmlFor="circuit-selector">Seleccionar circuito</label>
+        <select
+          className="focus-ring min-h-control w-full rounded-control border border-line-strong bg-surface/95 px-4 py-3 text-base font-bold text-content shadow-panel"
+          id="circuit-selector"
+          onChange={(event) => onSelect(event.target.value)}
+          value={selectedId}
+        >
+          {circuits.map((circuit) => (
+            <option key={circuit.id} value={circuit.id}>{circuit.name} — {getCategoryLabel(circuit)}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-3 hidden grid-cols-circuit-selector items-stretch gap-2 md:grid">
+        <Button aria-label="Circuito anterior" className="aspect-square self-center px-0" onClick={onPrevious}>
+          <span aria-hidden="true">←</span>
+        </Button>
+        <div aria-label="Todos los circuitos disponibles" className="scrollbar-none flex min-w-0 snap-x gap-2 overflow-x-auto py-1" role="list">
+          {circuits.map((circuit) => {
+            const isSelected = circuit.id === selectedId
+            const categoryLabel = getCategoryLabel(circuit)
+            return (
+              <div
+                className="shrink-0 snap-center"
+                key={circuit.id}
+                ref={(element) => { optionRefs.current[circuit.id] = element }}
+                role="listitem"
+              >
+                <Button
+                  aria-current={isSelected ? 'true' : undefined}
+                  aria-label={`${circuit.name}, ${categoryLabel}`}
+                  className="circuit-option"
+                  onClick={() => onSelect(circuit.id)}
+                  title={circuit.name}
+                  variant={isSelected ? 'primary' : 'secondary'}
+                >
+                  <span className="circuit-option__name">{circuit.name}</span>
+                  <span className="circuit-option__category">{categoryLabel}</span>
+                </Button>
+              </div>
+            )
+          })}
+        </div>
+        <Button aria-label="Circuito siguiente" className="aspect-square self-center px-0" onClick={onNext}>
+          <span aria-hidden="true">→</span>
+        </Button>
       </div>
     </div>
   )

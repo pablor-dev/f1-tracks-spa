@@ -14,9 +14,8 @@ export function AppHeader() {
         </a>
         <nav aria-label="Navegación principal">
           <ul className="flex items-center gap-1 text-sm font-semibold text-content-muted">
-            <li><a className="nav-link" href="#calendario">Temporada</a></li>
+            <li><a className="nav-link" href="#calendario">Circuitos</a></li>
             <li className="hidden sm:list-item"><a className="nav-link" href="#historia">Historia</a></li>
-            <li><a className="nav-link" href="#especiales">Especiales</a></li>
           </ul>
         </nav>
       </div>
