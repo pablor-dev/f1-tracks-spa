@@ -1,4 +1,5 @@
 import type { Circuit, CircuitCategory, CircuitStatus, HotspotType, TrackHotspot } from '../model/circuit'
+import { finishLineProgressByCircuitId, hasCurveReference, hotspotProgressByCircuitId } from './trackPresentation'
 
 type HotspotSeed = readonly [label: string, title: string, type: HotspotType, description: string]
 
@@ -20,23 +21,45 @@ interface CircuitSeed {
   backgroundPosition?: string
 }
 
-const viewBox = '0 0 640 390'
-const schematicPaths = [
-  'M97 279C62 223 84 139 149 111c43-19 71-65 126-66 43-1 65 35 105 42 70 13 139-24 172 34 27 48-11 90-5 139 7 54-34 87-87 79-64-9-105 15-162 0-45-12-64-54-105-58-33-3-74 30-96-2Z',
-  'M172 94c-43 25-67 80-37 116 25 29 76 3 67-33-8-30-50-8-38-50 13-48 93-69 141-44 45 24 56 81 103 97 43 15 66-27 105-9 36 16 29 68 1 91-47 40-118 40-168 8-42-26-101 8-150-9-44-16-72-67-43-106Z',
-  'M84 275c55-25 89-92 142-110 50-17 108-5 147 31 44 41 66 113 135 105 48-5 71-63 40-100-37-45-105-20-151-42-48-23-62-80-117-91-59-12-127 21-146 77-12 35 4 61 50 40Z M239 166c33 36 72 69 120 68 48 0 86-29 132-33',
-  'M95 261c53-16 82-63 131-87 62-30 126-4 183-34 49-26 102-55 138-12 31 37 5 90-38 105-48 17-94-10-138 8-51 20-69 78-126 78-43 0-84-26-89-58-5-29 25-42 62-52Z',
-]
-const hotspotPositions = [{ x: 128, y: 270 }, { x: 300, y: 112 }, { x: 514, y: 245 }, { x: 390, y: 326 }, { x: 208, y: 205 }, { x: 535, y: 108 }]
+const trackMapByCircuitId: Readonly<Record<string, string>> = {
+  'albert-park': 'melbourne-2.svg',
+  shanghai: 'shanghai-1.svg',
+  suzuka: 'suzuka-2.svg',
+  miami: 'miami-1.svg',
+  montreal: 'montreal-6.svg',
+  monaco: 'monaco-6.svg',
+  barcelona: 'catalunya-6.svg',
+  'red-bull-ring': 'spielberg-3.svg',
+  silverstone: 'silverstone-8.svg',
+  spa: 'spa-francorchamps-4.svg',
+  hungaroring: 'hungaroring-3.svg',
+  zandvoort: 'zandvoort-5.svg',
+  monza: 'monza-7.svg',
+  madring: 'madring-1.svg',
+  baku: 'baku-1.svg',
+  sepang: 'sepang-1.svg',
+  singapore: 'marina-bay-4.svg',
+  austin: 'austin-1.svg',
+  mexico: 'mexico-city-3.svg',
+  interlagos: 'interlagos-2.svg',
+  'las-vegas': 'las-vegas-1.svg',
+  lusail: 'lusail-1.svg',
+  'yas-marina': 'yas-marina-2.svg',
+  galvez: 'buenos-aires-3.svg',
+  bahrain: 'bahrain-1.svg',
+  jeddah: 'jeddah-1.svg',
+  imola: 'imola-3.svg',
+}
 
 function buildHotspots(id: string, seeds: HotspotSeed[]): TrackHotspot[] {
+  const progressValues = hotspotProgressByCircuitId[id]
   return seeds.map(([label, title, type, description], index) => ({
     id: `${id}-${index + 1}`,
     label,
     title,
     type,
-    position: hotspotPositions[index % hotspotPositions.length],
-    sector: (index % 3) + 1,
+    sector: Math.min(3, Math.floor(index * 3 / seeds.length) + 1),
+    progress: progressValues?.[index],
     description,
   }))
 }
@@ -55,7 +78,7 @@ const seeds: CircuitSeed[] = [
   { id: 'hungaroring', name: 'Hungaroring', officialName: 'Hungaroring', city: 'Mogyoród', country: 'Hungría', countryCode: 'HU', image: 'hungaroring.webp', round: 11, summary: 'Un circuito revirado donde el ritmo y la carga aerodinámica pesan más que la velocidad punta.', history: 'Inaugurado en 1986, fue la primera sede de Fórmula 1 al este del Telón de Acero.', challenges: ['Curvas enlazadas', 'Calor', 'Pocas zonas de descanso'], hotspots: [['T1', 'Primera horquilla', 'overtaking', 'La frenada principal ofrece una oportunidad de adelantamiento.'], ['T4', 'Curva ciega', 'elevation', 'La entrada rápida y ciega exige decisión.'], ['T6–7', 'Chicana', 'chicane', 'El cambio de dirección rompe el ritmo del sector medio.']] },
   { id: 'zandvoort', name: 'Zandvoort', officialName: 'Circuit Zandvoort', city: 'Zandvoort', country: 'Países Bajos', countryCode: 'NL', image: 'zandvoort.webp', round: 12, summary: 'Dunas, desnivel y curvas peraltadas dan al trazado neerlandés una identidad singular.', history: 'Zandvoort regresó al calendario en 2021 tras una amplia modernización que conservó su carácter.', challenges: ['Peraltes', 'Trazado estrecho', 'Carga lateral'], hotspots: [['T1', 'Tarzan', 'overtaking', 'La horquilla amplia permite distintas líneas.'], ['T7', 'Scheivlak', 'high-speed', 'Una curva rápida en descenso exige confianza.'], ['T14', 'Arie Luyendyk', 'corner', 'El peralte permite acelerar hacia la recta principal.']] },
   { id: 'monza', name: 'Monza', officialName: 'Autodromo Nazionale Monza', city: 'Monza', country: 'Italia', countryCode: 'IT', image: 'monza.webp', round: 13, summary: 'El Templo de la Velocidad combina largas rectas con frenadas de máxima exigencia.', history: 'Inaugurado en 1922, Monza es uno de los escenarios más antiguos y permanentes de la Fórmula 1.', challenges: ['Baja carga aerodinámica', 'Frenadas extremas', 'Tracción en chicanas'], hotspots: [['T1–2', 'Variante del Rettifilo', 'chicane', 'La mayor frenada de la vuelta exige precisión entre tráfico.'], ['T3', 'Curva Grande', 'high-speed', 'Una derecha prolongada recorrida a gran velocidad.'], ['T4–5', 'Variante della Roggia', 'chicane', 'El ataque a los pianos condiciona la salida.'], ['T6–7', 'Lesmo', 'corner', 'Dos derechas donde la tracción es determinante.'], ['T8–10', 'Variante Ascari', 'technical', 'Una secuencia rápida que premia el ritmo.'], ['T11', 'Curva Alboreto', 'historic', 'La curva final es clave para defender o atacar en la recta.']] },
-  { id: 'madring', name: 'Madring', officialName: 'Madring', city: 'Madrid', country: 'España', countryCode: 'ES', image: 'madring.webp', round: 14, summary: 'Un nuevo trazado urbano y semipermanente integrado en el entorno de Madrid.', history: 'Madrid se incorpora al calendario 2026 con un circuito de nueva construcción.', challenges: ['Aprendizaje de pista', 'Cambios de ritmo', 'Superficie urbana'], hotspots: [['S1', 'Sector inicial', 'technical', 'Una primera secuencia que exigirá referencias consistentes.'], ['S2', 'Sección rápida', 'high-speed', 'El sector veloz pondrá a prueba el balance.'], ['S3', 'Cierre de vuelta', 'braking-zone', 'La fase final concentrará frenada y tracción.']] },
+  { id: 'madring', name: 'Madring', officialName: 'Madring', city: 'Madrid', country: 'España', countryCode: 'ES', image: 'madring.webp', round: 14, summary: 'Un nuevo trazado urbano y semipermanente integrado en el entorno de Madrid.', history: 'Madrid se incorpora al calendario 2026 con un circuito de nueva construcción.', challenges: ['Aprendizaje de pista', 'Cambios de ritmo', 'Superficie urbana'], hotspots: [['T3', 'Curva 3', 'technical', 'Una referencia temprana dentro de la primera secuencia del trazado.'], ['T10', 'Curva 10', 'high-speed', 'El cambio de ritmo del tramo medio exige una trayectoria precisa.'], ['T18', 'Curva 18', 'braking-zone', 'Una referencia de la fase final antes de completar la vuelta.']] },
   { id: 'baku', name: 'Baku', officialName: 'Baku City Circuit', city: 'Baku', country: 'Azerbaiyán', countryCode: 'AZ', image: 'baku.webp', round: 15, summary: 'Un urbano de contrastes: sección medieval estrecha y una larguísima recta principal.', history: 'Baku forma parte del campeonato desde 2016 y combina velocidad punta con precisión entre muros.', challenges: ['Baja carga', 'Muros cercanos', 'Frenadas fuertes'], hotspots: [['T1', 'Primera frenada', 'overtaking', 'La recta principal desemboca en una frenada de ataque.'], ['T8', 'Castillo', 'historic', 'La sección más estrecha requiere exactitud absoluta.'], ['T16–20', 'Aceleración final', 'high-speed', 'Una larga secuencia a fondo prioriza eficiencia.']] },
   { id: 'sepang', name: 'Sepang', officialName: 'Sepang International Circuit', city: 'Sepang', country: 'Malasia', countryCode: 'MY', image: 'sepang.webp', round: 16, summary: 'Curvas amplias, largas rectas y calor tropical forman una prueba física y técnica.', history: 'Sepang fue inaugurado en 1999 y abrió una etapa de circuitos modernos en Asia.', challenges: ['Calor y humedad', 'Curvas largas', 'Compromiso aerodinámico'], hotspots: [['T1–2', 'Complejo inicial', 'technical', 'Dos curvas de radios distintos exigen rotación y tracción.'], ['T5–6', 'Ese rápida', 'high-speed', 'El cambio de apoyo carga los neumáticos.'], ['T15', 'Horquilla final', 'overtaking', 'La frenada final ofrece líneas alternativas.']] },
   { id: 'singapore', name: 'Marina Bay', officialName: 'Marina Bay Street Circuit', city: 'Singapur', country: 'Singapur', countryCode: 'SG', image: 'marina-bay.webp', round: 17, summary: 'Una carrera nocturna entre muros, calor y numerosas frenadas.', history: 'Marina Bay acogió en 2008 la primera carrera nocturna de la Fórmula 1.', challenges: ['Calor', 'Concentración', 'Tracción urbana'], hotspots: [['T1–3', 'Complejo inicial', 'technical', 'El inicio enlazado exige colocación precisa.'], ['T5', 'Aceleración urbana', 'high-speed', 'La salida limpia abre una sección rápida.'], ['T14', 'Frenada de ataque', 'overtaking', 'Una frenada marcada crea opciones de adelantamiento.']] },
@@ -71,8 +94,9 @@ const seeds: CircuitSeed[] = [
   { id: 'galvez', name: 'Oscar y Juan Gálvez', officialName: 'Autódromo Oscar y Juan Gálvez', city: 'Buenos Aires', country: 'Argentina', countryCode: 'AR', image: 'buenos-aires.webp', category: 'special', status: 'historic', summary: 'Un emblema del automovilismo argentino con múltiples configuraciones.', history: 'Inaugurado en 1952, fue escenario del Gran Premio de Argentina en distintas etapas entre 1953 y 1998.', challenges: ['Adaptación a variantes', 'Frenada y tracción', 'Superficie cambiante'], hotspots: [['Curvón', 'Curvón Salotto', 'historic', 'Una referencia del trazado extenso por su velocidad y compromiso.'], ['Mixtos', 'Sector mixto', 'technical', 'Los cambios de dirección exigen agilidad.'], ['Horquilla', 'Horquilla', 'overtaking', 'Una frenada profunda históricamente asociada a intentos de sobrepaso.']] },
 ]
 
-export const circuits: Circuit[] = seeds.map((seed, index) => {
+export const circuits: Circuit[] = seeds.map((seed) => {
   const category = seed.category ?? 'official'
+  const trackMap = trackMapByCircuitId[seed.id]
   return {
     id: seed.id,
     slug: seed.id,
@@ -95,10 +119,11 @@ export const circuits: Circuit[] = seeds.map((seed, index) => {
       visualTreatment: 'cinematic-dark',
     },
     track: {
-      svg: schematicPaths[index % schematicPaths.length],
-      viewBox,
+      finishLineProgress: finishLineProgressByCircuitId[seed.id],
+      mapImage: trackMap ? `/circuits/tracks/${trackMap}` : null,
       hotspots: buildHotspots(seed.id, seed.hotspots),
-      representation: 'provisional',
+      representation: trackMap ? 'verified' : 'unavailable',
+      referenceCoverage: hasCurveReference(seed.id) ? 'curve-reference' : 'track-only',
     },
   }
 })

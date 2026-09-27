@@ -18,6 +18,7 @@ function getCategoryLabel(circuit: Circuit) {
 export function CircuitControls({ circuits, onNext, onPrevious, onSelect, selectedId }: CircuitControlsProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(0)
+  const carouselRef = useRef<HTMLDivElement | null>(null)
   const carouselOptionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const mobileMenuRef = useRef<HTMLDivElement | null>(null)
   const mobileTriggerRef = useRef<HTMLButtonElement | null>(null)
@@ -26,9 +27,17 @@ export function CircuitControls({ circuits, onNext, onPrevious, onSelect, select
   const selectedCircuit = circuits[selectedIndex]
 
   const centerSelectedCarouselOption = useCallback(() => {
+    const carousel = carouselRef.current
     const selectedOption = carouselOptionRefs.current[selectedId]
+    if (!carousel || !selectedOption) return
+
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-    selectedOption?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })
+    const carouselRect = carousel.getBoundingClientRect()
+    const selectedOptionRect = selectedOption.getBoundingClientRect()
+    const centeredOffset = (carousel.clientWidth - selectedOptionRect.width) / 2
+    const left = carousel.scrollLeft + selectedOptionRect.left - carouselRect.left - centeredOffset
+
+    carousel.scrollTo?.({ behavior: reduceMotion ? 'auto' : 'smooth', left })
   }, [selectedId])
 
   useEffect(() => centerSelectedCarouselOption(), [centerSelectedCarouselOption])
@@ -168,7 +177,12 @@ export function CircuitControls({ circuits, onNext, onPrevious, onSelect, select
         <Button aria-label="Circuito anterior" className="aspect-square self-center px-0" onClick={onPrevious}>
           <span aria-hidden="true">←</span>
         </Button>
-        <div aria-label="Todos los circuitos disponibles" className="scrollbar-none flex min-w-0 snap-x gap-2 overflow-x-auto py-1" role="list">
+        <div
+          aria-label="Todos los circuitos disponibles"
+          className="scrollbar-none flex min-w-0 snap-x gap-2 overflow-x-auto py-1"
+          ref={carouselRef}
+          role="list"
+        >
           {circuits.map((circuit) => {
             const isSelected = circuit.id === selectedId
             const categoryLabel = getCategoryLabel(circuit)

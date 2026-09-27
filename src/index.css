@@ -23,6 +23,9 @@
   --color-gold: #c89b3c;
   --color-gold-bright: #f1cf7a;
   --color-gold-soft: #251f13;
+  --color-track-zone-1: #ff625d;
+  --color-track-zone-2: #64e5bc;
+  --color-track-zone-3: #f1cf7a;
   --radius-control: 0.75rem;
   --radius-panel: 1.25rem;
   --radius-pill: 999rem;
@@ -108,6 +111,76 @@ button:disabled { cursor: not-allowed; }
   object-fit: cover;
   pointer-events: none;
   animation: circuit-reveal 450ms var(--ease-drive) both;
+  will-change: opacity, transform;
+}
+.circuit-backdrop-loader--outgoing {
+  z-index: -3;
+  animation: none;
+}
+.circuit-backdrop-loader--candidate {
+  z-index: -2;
+  opacity: 0;
+  transform: scale(1.045) translateX(var(--circuit-entry-offset));
+  animation: none;
+}
+.circuit-backdrop-loader--settled { animation: none; }
+.circuit-stage[data-transition-phase='entering'] .circuit-backdrop-loader--outgoing {
+  animation: circuit-backdrop-depart 540ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-stage[data-transition-phase='entering'] .circuit-backdrop-loader--candidate.is-ready {
+  animation: circuit-backdrop-arrive 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-speed-wash {
+  position: absolute;
+  inset: -12%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(105deg, transparent 18%, rgb(255 255 255 / 0.08) 43%, transparent 58%),
+    linear-gradient(90deg, rgb(8 9 12 / 0.15), rgb(8 9 12 / 0.94) 48%, rgb(8 9 12 / 0.78));
+  transform: scaleX(0.18) skewX(-7deg);
+  will-change: opacity, transform;
+}
+.circuit-stage[data-transition-direction='previous'] {
+  --circuit-entry-offset: -1.25rem;
+  --circuit-exit-offset: 1.25rem;
+  --circuit-speed-release-skew: -4deg;
+  --circuit-speed-skew: 7deg;
+}
+.circuit-stage[data-transition-direction='next'] {
+  --circuit-entry-offset: 1.25rem;
+  --circuit-exit-offset: -1.25rem;
+  --circuit-speed-release-skew: 4deg;
+  --circuit-speed-skew: -7deg;
+}
+.circuit-stage[data-transition-direction='neutral'] {
+  --circuit-entry-offset: 0rem;
+  --circuit-exit-offset: 0rem;
+  --circuit-speed-release-skew: 0deg;
+  --circuit-speed-skew: 0deg;
+}
+.circuit-stage[data-transition-direction='previous'] .circuit-speed-wash { transform-origin: right center; }
+.circuit-stage[data-transition-direction='next'] .circuit-speed-wash { transform-origin: left center; }
+.circuit-stage[data-transition-direction='neutral'] .circuit-speed-wash { transform-origin: center; }
+.circuit-stage[data-transition-phase='exiting'] .circuit-speed-wash {
+  animation: circuit-speed-sweep 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.circuit-stage[data-transition-phase='waiting'] .circuit-speed-wash {
+  opacity: 1;
+  transform: scaleX(1) skewX(0);
+}
+.circuit-stage[data-transition-phase='entering'] .circuit-speed-wash {
+  animation: circuit-speed-release 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-transition-content { will-change: opacity, transform; }
+.circuit-stage[data-transition-phase='exiting'] .circuit-transition-content {
+  animation: circuit-content-depart 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.circuit-stage[data-transition-phase='waiting'] .circuit-transition-content { opacity: 0; }
+.circuit-stage[data-transition-phase='entering'] .circuit-transition-content {
+  opacity: 0;
+  animation: circuit-content-arrive 660ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
 }
 .circuit-media-state {
   position: absolute;
@@ -128,6 +201,31 @@ button:disabled { cursor: not-allowed; }
 @keyframes circuit-reveal {
   from { opacity: 0; transform: scale(1.02); }
   to { opacity: 1; transform: scale(1); }
+}
+@keyframes circuit-backdrop-depart {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.035); }
+}
+@keyframes circuit-backdrop-arrive {
+  from { opacity: 0; transform: scale(1.045) translateX(var(--circuit-entry-offset)); }
+  to { opacity: 1; transform: scale(1) translateX(0); }
+}
+@keyframes circuit-speed-sweep {
+  from { opacity: 0; transform: scaleX(0.18) skewX(var(--circuit-speed-skew)); }
+  55% { opacity: 0.86; }
+  to { opacity: 1; transform: scaleX(1) skewX(0); }
+}
+@keyframes circuit-speed-release {
+  from { opacity: 1; transform: scaleX(1) skewX(0); }
+  to { opacity: 0; transform: scaleX(1.08) skewX(var(--circuit-speed-release-skew)); }
+}
+@keyframes circuit-content-depart {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(var(--circuit-exit-offset)); }
+}
+@keyframes circuit-content-arrive {
+  from { opacity: 0; transform: translateX(var(--circuit-entry-offset)); }
+  to { opacity: 1; transform: translateX(0); }
 }
 .eyebrow {
   color: var(--color-brand-bright);
@@ -164,16 +262,124 @@ button:disabled { cursor: not-allowed; }
   background-size: 2rem 2rem;
 }
 .track-canvas { height: clamp(14rem, 36vh, 17rem); }
-.track-shadow { stroke: rgb(0 0 0 / 0.7); stroke-linecap: round; stroke-linejoin: round; stroke-width: 22; }
-.track-line { stroke: var(--color-content-soft); stroke-linecap: round; stroke-linejoin: round; stroke-width: 9; transition: stroke 300ms var(--ease-drive); }
-.track-marker { cursor: pointer; }
-.track-marker circle {
-  fill: var(--color-surface); stroke: var(--color-content-soft); stroke-width: 2;
-  transition: fill 180ms var(--ease-drive), stroke 180ms var(--ease-drive), transform 180ms var(--ease-drive);
+.track-map {
+  display: block;
+  width: min(100%, 25rem);
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.5));
 }
-.track-marker text { fill: var(--color-content); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; pointer-events: none; }
-.track-marker:hover circle, .track-marker:focus-visible circle, .track-marker circle.is-selected {
-  fill: var(--color-brand); stroke: var(--color-brand-bright); transform: scale(1.08);
+.interactive-track-map {
+  position: relative;
+  z-index: var(--z-index-content);
+  display: block;
+  width: min(100%, 25rem);
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 0.5));
+}
+.interactive-track-map__base,
+.interactive-track-map__zone {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 20;
+}
+.interactive-track-map__base { stroke: var(--color-line-strong); }
+.interactive-track-map__zone {
+  cursor: pointer;
+  opacity: 0.42;
+  transition: opacity 180ms var(--ease-drive), filter 180ms var(--ease-drive);
+}
+.interactive-track-map__zone:hover,
+.interactive-track-map__zone:focus-visible,
+.interactive-track-map__zone.is-active {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.35rem currentColor);
+  outline: none;
+}
+.interactive-track-map__zone:focus-visible { stroke-width: 25; }
+.interactive-track-map__zone--1 { color: var(--color-track-zone-1); stroke: var(--color-track-zone-1); }
+.interactive-track-map__zone--2 { color: var(--color-track-zone-2); stroke: var(--color-track-zone-2); }
+.interactive-track-map__zone--3 { color: var(--color-track-zone-3); stroke: var(--color-track-zone-3); }
+.track-marker {
+  cursor: pointer;
+  color: var(--color-track-zone-1);
+  opacity: 0.72;
+  transition: opacity 180ms var(--ease-drive), filter 180ms var(--ease-drive);
+}
+.track-marker circle {
+  fill: var(--color-canvas);
+  stroke: currentColor;
+  stroke-width: 4;
+}
+.track-marker text {
+  fill: var(--color-content);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  pointer-events: none;
+  text-anchor: middle;
+}
+.track-marker--2 { color: var(--color-track-zone-2); }
+.track-marker--3 { color: var(--color-track-zone-3); }
+.track-marker:hover,
+.track-marker:focus-visible,
+.track-marker.is-active {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.3rem currentColor);
+  outline: none;
+}
+.track-marker:focus-visible circle,
+.track-marker.is-active circle { stroke-width: 7; }
+.track-finish-source { fill: transparent; stroke: transparent; pointer-events: none; }
+.track-finish-marker { color: var(--color-content); pointer-events: none; }
+.track-finish-marker__outer {
+  fill: var(--color-canvas);
+  stroke: currentColor;
+  stroke-width: 4;
+}
+.track-finish-marker__inner { fill: var(--color-brand-bright); }
+.track-map-loading {
+  width: min(80%, 18rem);
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-line-subtle), var(--color-line-strong), var(--color-line-subtle));
+  background-size: 200% 100%;
+  animation: track-loading 1.2s linear infinite;
+}
+@keyframes track-loading { to { background-position: -200% 0; } }
+.track-zone-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.track-zone-control,
+.track-hotspot-control {
+  min-height: 2.25rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  padding-inline: 0.75rem;
+  color: var(--color-content-soft);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  transition: color 180ms var(--ease-drive), background-color 180ms var(--ease-drive), border-color 180ms var(--ease-drive);
+}
+.track-zone-control:hover,
+.track-hotspot-control:hover { border-color: var(--color-content-muted); color: var(--color-content); }
+.track-zone-control[aria-pressed='true'],
+.track-hotspot-control[aria-pressed='true'] { background: var(--color-surface-overlay); color: var(--color-content); }
+.track-zone-control--1[aria-pressed='true'] { border-color: var(--color-track-zone-1); }
+.track-zone-control--2[aria-pressed='true'] { border-color: var(--color-track-zone-2); }
+.track-zone-control--3[aria-pressed='true'] { border-color: var(--color-track-zone-3); }
+.track-hotspot-control[aria-pressed='true'] { border-color: var(--color-brand-bright); }
+.track-map-fallback {
+  display: flex;
+  max-width: 18rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1rem 2rem;
+  color: var(--color-content-dim);
+  text-align: center;
 }
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -313,4 +519,12 @@ button:disabled { cursor: not-allowed; }
     scroll-behavior: auto !important; transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
   }
+  .circuit-transition-content,
+  .circuit-backdrop-loader,
+  .circuit-speed-wash {
+    animation-delay: 0ms !important;
+    filter: none !important;
+  }
+  .circuit-stage[data-transition-phase='waiting'] .circuit-transition-content { opacity: 1; }
+  .circuit-speed-wash { display: none; }
 }
