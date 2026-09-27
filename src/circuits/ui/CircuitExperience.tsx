@@ -47,14 +47,16 @@ export function CircuitExperience({ onRetry, status = 'ready' }: CircuitExperien
         <div className="circuit-stage__shade" aria-hidden="true" />
         {backdropState === 'loading' ? <p className="circuit-media-state" role="status">Cargando ambiente del circuito…</p> : null}
         {backdropState === 'error' ? <p className="circuit-media-state" role="alert">No se pudo cargar el fondo. La información y el trazado siguen disponibles.</p> : null}
-        <div className="page-shell relative z-content py-5 sm:py-8">
+        <div className="page-shell relative z-content py-4 sm:py-5">
           <CircuitControls circuits={circuits} onNext={() => selectByOffset(1)} onPrevious={() => selectByOffset(-1)} onSelect={setSelectedId} selectedId={selectedId} />
-          <div className="mt-8 grid items-start gap-8 lg:grid-cols-experience lg:gap-10">
-            <div>
+          <div className="mt-5 grid min-w-0 items-start gap-5 lg:grid-cols-experience lg:gap-7">
+            <div className="min-w-0">
               <CircuitHero circuit={selectedCircuit} />
               <CircuitDetails circuit={selectedCircuit} />
             </div>
-            <TrackExplorer circuit={selectedCircuit} key={selectedCircuit.id} />
+            <div className="min-w-0">
+              <TrackExplorer circuit={selectedCircuit} key={selectedCircuit.id} />
+            </div>
           </div>
         </div>
       </section>
