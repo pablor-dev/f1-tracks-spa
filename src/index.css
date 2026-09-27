@@ -111,6 +111,76 @@ button:disabled { cursor: not-allowed; }
   object-fit: cover;
   pointer-events: none;
   animation: circuit-reveal 450ms var(--ease-drive) both;
+  will-change: opacity, transform;
+}
+.circuit-backdrop-loader--outgoing {
+  z-index: -3;
+  animation: none;
+}
+.circuit-backdrop-loader--candidate {
+  z-index: -2;
+  opacity: 0;
+  transform: scale(1.045) translateX(var(--circuit-entry-offset));
+  animation: none;
+}
+.circuit-backdrop-loader--settled { animation: none; }
+.circuit-stage[data-transition-phase='entering'] .circuit-backdrop-loader--outgoing {
+  animation: circuit-backdrop-depart 540ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-stage[data-transition-phase='entering'] .circuit-backdrop-loader--candidate.is-ready {
+  animation: circuit-backdrop-arrive 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-speed-wash {
+  position: absolute;
+  inset: -12%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(105deg, transparent 18%, rgb(255 255 255 / 0.08) 43%, transparent 58%),
+    linear-gradient(90deg, rgb(8 9 12 / 0.15), rgb(8 9 12 / 0.94) 48%, rgb(8 9 12 / 0.78));
+  transform: scaleX(0.18) skewX(-7deg);
+  will-change: opacity, transform;
+}
+.circuit-stage[data-transition-direction='previous'] {
+  --circuit-entry-offset: -1.25rem;
+  --circuit-exit-offset: 1.25rem;
+  --circuit-speed-release-skew: -4deg;
+  --circuit-speed-skew: 7deg;
+}
+.circuit-stage[data-transition-direction='next'] {
+  --circuit-entry-offset: 1.25rem;
+  --circuit-exit-offset: -1.25rem;
+  --circuit-speed-release-skew: 4deg;
+  --circuit-speed-skew: -7deg;
+}
+.circuit-stage[data-transition-direction='neutral'] {
+  --circuit-entry-offset: 0rem;
+  --circuit-exit-offset: 0rem;
+  --circuit-speed-release-skew: 0deg;
+  --circuit-speed-skew: 0deg;
+}
+.circuit-stage[data-transition-direction='previous'] .circuit-speed-wash { transform-origin: right center; }
+.circuit-stage[data-transition-direction='next'] .circuit-speed-wash { transform-origin: left center; }
+.circuit-stage[data-transition-direction='neutral'] .circuit-speed-wash { transform-origin: center; }
+.circuit-stage[data-transition-phase='exiting'] .circuit-speed-wash {
+  animation: circuit-speed-sweep 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.circuit-stage[data-transition-phase='waiting'] .circuit-speed-wash {
+  opacity: 1;
+  transform: scaleX(1) skewX(0);
+}
+.circuit-stage[data-transition-phase='entering'] .circuit-speed-wash {
+  animation: circuit-speed-release 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.circuit-transition-content { will-change: opacity, transform; }
+.circuit-stage[data-transition-phase='exiting'] .circuit-transition-content {
+  animation: circuit-content-depart 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.circuit-stage[data-transition-phase='waiting'] .circuit-transition-content { opacity: 0; }
+.circuit-stage[data-transition-phase='entering'] .circuit-transition-content {
+  opacity: 0;
+  animation: circuit-content-arrive 660ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
 }
 .circuit-media-state {
   position: absolute;
@@ -131,6 +201,31 @@ button:disabled { cursor: not-allowed; }
 @keyframes circuit-reveal {
   from { opacity: 0; transform: scale(1.02); }
   to { opacity: 1; transform: scale(1); }
+}
+@keyframes circuit-backdrop-depart {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.035); }
+}
+@keyframes circuit-backdrop-arrive {
+  from { opacity: 0; transform: scale(1.045) translateX(var(--circuit-entry-offset)); }
+  to { opacity: 1; transform: scale(1) translateX(0); }
+}
+@keyframes circuit-speed-sweep {
+  from { opacity: 0; transform: scaleX(0.18) skewX(var(--circuit-speed-skew)); }
+  55% { opacity: 0.86; }
+  to { opacity: 1; transform: scaleX(1) skewX(0); }
+}
+@keyframes circuit-speed-release {
+  from { opacity: 1; transform: scaleX(1) skewX(0); }
+  to { opacity: 0; transform: scaleX(1.08) skewX(var(--circuit-speed-release-skew)); }
+}
+@keyframes circuit-content-depart {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(var(--circuit-exit-offset)); }
+}
+@keyframes circuit-content-arrive {
+  from { opacity: 0; transform: translateX(var(--circuit-entry-offset)); }
+  to { opacity: 1; transform: translateX(0); }
 }
 .eyebrow {
   color: var(--color-brand-bright);
@@ -424,4 +519,12 @@ button:disabled { cursor: not-allowed; }
     scroll-behavior: auto !important; transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
   }
+  .circuit-transition-content,
+  .circuit-backdrop-loader,
+  .circuit-speed-wash {
+    animation-delay: 0ms !important;
+    filter: none !important;
+  }
+  .circuit-stage[data-transition-phase='waiting'] .circuit-transition-content { opacity: 1; }
+  .circuit-speed-wash { display: none; }
 }
