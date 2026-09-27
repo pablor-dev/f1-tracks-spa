@@ -1,4 +1,5 @@
 import { CircuitExperience } from '../circuits/ui/CircuitExperience'
+import { AppFooter } from './shell/AppFooter'
 import { AppHeader } from './shell/AppHeader'
 
 export function App() {
@@ -9,6 +10,7 @@ export function App() {
       </a>
       <AppHeader />
       <CircuitExperience />
+      <AppFooter />
     </div>
   )
 }
