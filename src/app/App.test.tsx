@@ -21,8 +21,12 @@ describe('dataset de circuitos', () => {
     ])
     expect(specialCircuits.map((circuit) => circuit.id)).toEqual(['bahrain', 'jeddah', 'imola', 'galvez'])
     expect(specialCircuits.every((circuit) => circuit.round === undefined)).toBe(true)
-    expect(circuits.filter((circuit) => circuit.track.mapImage !== null)).toHaveLength(24)
-    expect(circuits.filter((circuit) => circuit.track.mapImage === null).map((circuit) => circuit.id)).toEqual(['bahrain', 'jeddah', 'imola'])
+    expect(circuits.filter((circuit) => circuit.track.mapImage !== null)).toHaveLength(27)
+    expect(circuits.filter((circuit) => circuit.track.mapImage === null)).toHaveLength(0)
+    expect(circuits.filter((circuit) => circuit.track.referenceCoverage === 'curve-reference')).toHaveLength(27)
+    expect(circuits.find((circuit) => circuit.id === 'bahrain')?.track.mapImage).toBe('/circuits/tracks/bahrain-1.svg')
+    expect(circuits.find((circuit) => circuit.id === 'jeddah')?.track.mapImage).toBe('/circuits/tracks/jeddah-1.svg')
+    expect(circuits.find((circuit) => circuit.id === 'imola')?.track.mapImage).toBe('/circuits/tracks/imola-3.svg')
   })
 })
 
@@ -44,7 +48,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Shanghai' })).toBeInTheDocument()
     expect(screen.getByText('Calendario 2026 · 2 de 27')).toBeInTheDocument()
     expect(screen.getByLabelText('Experiencia de Shanghai International Circuit').querySelector('img')).toHaveAttribute('src', '/circuits/shanghai.webp')
-    expect(screen.getByRole('img', { name: /cartografía del trazado.*shanghai/i })).toHaveAttribute('src', '/circuits/tracks/shanghai-1.svg')
+    expect(await screen.findByRole('img', { name: /trazado.*shanghai/i })).toHaveAttribute('src', '/circuits/tracks/shanghai-1.svg')
     await user.click(screen.getByRole('button', { name: 'Circuito anterior' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Albert Park' })).toBeInTheDocument()
   })
@@ -108,12 +112,12 @@ describe('App', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 
-  it('comunica cuando un circuito no tiene una fuente cartográfica', async () => {
+  it('ofrece zonas y curvas destacadas para los circuitos con referencia', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Bahréin, Especial' }))
-    expect(screen.getByRole('img', { name: /cartografía del trazado.*bahrain.*no disponible/i })).toBeInTheDocument()
-    expect(screen.getByText('Trazado no disponible')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Shanghai, Calendario 2026' }))
+    expect(screen.getByRole('button', { name: 'T1–2' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Z1' })).toBeInTheDocument()
   })
 
   it('mantiene disponible la experiencia si falla el fondo ambiental', () => {
